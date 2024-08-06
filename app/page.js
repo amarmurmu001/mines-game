@@ -36,7 +36,7 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-[#13202C]">
             <header className="bg-[#1A2C38] py-2 px-4 flex justify-between items-center">
-                <h1 className="text-white text-xl font-bold">Stake</h1>
+                <h1 className="text-white text-xl font-bold">MinesGame</h1>
                 <div className="flex items-center bg-[#13202C] rounded-md space-x-4">
                     <span className="text-white py-2 mx-8 text-sm">₹{balance.toFixed(2)}</span>
                     <button 
