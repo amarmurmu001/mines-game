@@ -4,13 +4,14 @@ import { useSpring, animated } from '@react-spring/web';
 
 const MinesGame = ({ wallet, updateWallet }) => {
     const [mode, setMode] = useState('manual');
-    const [betAmount, setBetAmount] = useState(0);
+    const [betAmount, setBetAmount] = useState('');
     const [mines, setMines] = useState(3);
     const [isGameActive, setIsGameActive] = useState(false);
     const [revealed, setRevealed] = useState([]);
     const [bombs, setBombs] = useState([]);
     const [multiplication, setMultiplication] = useState(1);
     const [isGameOver, setIsGameOver] = useState(false);
+    const [hasOpenedCell, setHasOpenedCell] = useState(false);
 
     const gridSize = 5; // 5x5 grid
 
@@ -20,6 +21,7 @@ const MinesGame = ({ wallet, updateWallet }) => {
             setRevealed([]);
             setIsGameOver(false);
             setMultiplication(1);
+            setHasOpenedCell(false);
             generateBombs();
         }
     }, [isGameActive]);
@@ -39,7 +41,8 @@ const MinesGame = ({ wallet, updateWallet }) => {
 
     // Handle cell click
     const handleCellClick = (index) => {
-        if (isGameOver || revealed.includes(index)) return;
+        if (isGameOver || revealed.includes(index) || !isGameActive) return;
+        setHasOpenedCell(true);
         if (bombs.includes(index)) {
             setIsGameOver(true);
             setRevealed([...revealed, index]);
@@ -52,17 +55,17 @@ const MinesGame = ({ wallet, updateWallet }) => {
 
     // Handle betting
     const handleBet = () => {
-        if (betAmount <= 0 || betAmount > wallet) return;
-        updateWallet(-betAmount);
+        if (betAmount <= 0 || betAmount > wallet || betAmount === '') return;
+        updateWallet(-parseFloat(betAmount));
         setIsGameActive(true);
     };
 
     // Handle cash out
     const handleCashOut = () => {
-        if (isGameActive && !isGameOver) {
-            updateWallet(betAmount * multiplication);
+        if (isGameActive && !isGameOver && hasOpenedCell) {
+            updateWallet(parseFloat(betAmount) * multiplication);
             setIsGameActive(false);
-            setRevealed([]); // Hide emojis after cashing out
+            setRevealed([]); // Hide the emojis after cashing out
         }
     };
 
@@ -91,18 +94,19 @@ const MinesGame = ({ wallet, updateWallet }) => {
                             <input 
                                 type="number" 
                                 value={betAmount}
-                                onChange={(e) => setBetAmount(parseFloat(e.target.value) || 0)}
+                                onChange={(e) => setBetAmount(e.target.value === '' ? '' : Math.min(parseFloat(e.target.value) || 0, wallet))}
+                                onFocus={(e) => e.target.value === '0' && setBetAmount('')}
                                 className="w-full bg-transparent py-1 px-2 text-sm focus:outline-none"
                             />
                             <button 
+                                onClick={() => setBetAmount(Math.min(betAmount / 2, wallet))} 
                                 className="px-1 py-1 text-xs text-yellow-400"
-                                onClick={() => setBetAmount(prev => prev / 2)}
                             >
                                 ½
                             </button>
                             <button 
+                                onClick={() => setBetAmount(Math.min(betAmount * 2, wallet))} 
                                 className="px-1 py-1 mr-1 text-xs"
-                                onClick={() => setBetAmount(prev => prev * 2)}
                             >
                                 2×
                             </button>
@@ -125,14 +129,15 @@ const MinesGame = ({ wallet, updateWallet }) => {
                     <button 
                         onClick={isGameActive ? handleCashOut : handleBet}
                         className={`w-full ${isGameActive ? 'bg-red-500' : 'bg-green-500'} text-white py-2 rounded-md font-bold text-sm`}
+                        disabled={isGameActive && !hasOpenedCell}
                     >
                         {isGameActive ? 'Cash Out' : 'Bet'}
                     </button>
                     {isGameActive && !isGameOver && (
-                        <div className="text-center mt-2 text-yellow-400">
-                            Multiplier: {multiplication.toFixed(2)}x<br />
-                            Amount: {(betAmount * multiplication).toFixed(2)}
-                        </div>
+                        <div className="text-center mt-2 text-yellow-400">Multiplier: {multiplication.toFixed(2)}x</div>
+                    )}
+                    {isGameActive && !isGameOver && hasOpenedCell && (
+                        <div className="text-center mt-2 text-yellow-400">Multiplied Amount: {(betAmount * multiplication).toFixed(2)}</div>
                     )}
                 </div>
 
@@ -142,6 +147,7 @@ const MinesGame = ({ wallet, updateWallet }) => {
                             key={index} 
                             className={`aspect-square bg-[#243A4E] rounded-md cursor-pointer hover:bg-[#2F4A63] transition-colors flex items-center justify-center text-2xl ${revealed.includes(index) ? 'opacity-100' : 'opacity-50'}`}
                             onClick={() => handleCellClick(index)}
+                            style={{ opacity: isGameOver && revealed.includes(index) ? 1 : 0.5 }}
                         >
                             {revealed.includes(index) ? (bombs.includes(index) ? '💣' : '💎') : ''}
                         </animated.div>

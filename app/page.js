@@ -1,11 +1,19 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MinesGame from '../components/MinesGame';
 import WalletModal from '../components/WalletModal';
 
 export default function Home() {
     const [walletOpen, setWalletOpen] = useState(false);
-    const [balance, setBalance] = useState(0.62);
+    const [balance, setBalance] = useState(() => {
+        // Get the initial balance from local storage or default to 0.00
+        return parseFloat(localStorage.getItem('wallet')) || 0.00;
+    });
+
+    useEffect(() => {
+        // Update local storage whenever the balance changes
+        localStorage.setItem('wallet', balance.toFixed(2));
+    }, [balance]);
 
     const openWalletModal = () => setWalletOpen(true);
     const closeWalletModal = () => setWalletOpen(false);

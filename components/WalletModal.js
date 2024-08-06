@@ -6,10 +6,13 @@ const WalletModal = ({ isOpen, onRequestClose, addMoney }) => {
     const [amount, setAmount] = useState('');
 
     const handleAddMoney = () => {
-        if (amount && !isNaN(amount)) {
-            addMoney(parseFloat(amount));
+        const parsedAmount = parseFloat(amount);
+        if (!isNaN(parsedAmount) && parsedAmount > 0) {
+            addMoney(parsedAmount);
             setAmount('');
             onRequestClose();
+        } else {
+            alert("Please enter a valid amount greater than zero");
         }
     };
 
@@ -17,8 +20,8 @@ const WalletModal = ({ isOpen, onRequestClose, addMoney }) => {
         <Modal 
             isOpen={isOpen} 
             onRequestClose={onRequestClose}
-            className="flex flex-col items-center justify-center bg-[#1A2C38] p-4 rounded-lg outline-none w-full max-w-md mx-auto"
-            overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#1A2C38] p-4 rounded-lg outline-none w-full max-w-md mx-4 sm:mx-1"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-50"
         >
             <h2 className="text-white text-lg mb-4">Add Money to Wallet</h2>
             <input 
