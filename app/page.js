@@ -5,14 +5,21 @@ import WalletModal from '../components/WalletModal';
 
 export default function Home() {
     const [walletOpen, setWalletOpen] = useState(false);
-    const [balance, setBalance] = useState(() => {
-        // Get the initial balance from local storage or default to 0.00
-        return parseFloat(localStorage.getItem('wallet')) || 0.00;
-    });
+    const [balance, setBalance] = useState(0.00);
 
     useEffect(() => {
-        // Update local storage whenever the balance changes
-        localStorage.setItem('wallet', balance.toFixed(2));
+        if (typeof window !== 'undefined') {
+            // Get the initial balance from local storage or default to 0.00
+            const storedBalance = parseFloat(localStorage.getItem('wallet')) || 0.00;
+            setBalance(storedBalance);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // Update local storage whenever the balance changes
+            localStorage.setItem('wallet', balance.toFixed(2));
+        }
     }, [balance]);
 
     const openWalletModal = () => setWalletOpen(true);
@@ -29,7 +36,7 @@ export default function Home() {
     return (
         <div className="min-h-screen bg-[#13202C]">
             <header className="bg-[#1A2C38] py-2 px-4 flex justify-between items-center">
-                <h1 className="text-white text-xl font-bold">MinesGame</h1>
+                <h1 className="text-white text-xl font-bold">Stake</h1>
                 <div className="flex items-center bg-[#13202C] rounded-md space-x-4">
                     <span className="text-white py-2 mx-8 text-sm">₹{balance.toFixed(2)}</span>
                     <button 
